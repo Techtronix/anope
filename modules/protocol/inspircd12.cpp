@@ -410,6 +410,12 @@ class InspIRCd12Proto : public IRCDProto
 	{
 		UplinkSocket::Message(Me) << "METADATA " << uid << " accountname :" << acc;
 
+		Anope::string target = uid.substr(0, 3);
+		if (!vident.empty())
+			UplinkSocket::Message(Me) << "ENCAP " << target << " CHGIDENT " << uid << " " << vident;
+		if (!vhost.empty())
+			UplinkSocket::Message(Me) << "ENCAP " << target << " CHGHOST " << uid << " " << vhost;
+
 		SASLUser su;
 		su.uid = uid;
 		su.acc = acc;
