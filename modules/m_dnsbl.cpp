@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -56,8 +56,8 @@ class DNSBLResolver : public Request
 			return;
 
 		const ResourceRecord &ans_record = record->answers[0];
-		// Replies should be in 127.0.0.0/24
-		if (ans_record.rdata.find("127.0.0.") != 0)
+		// Replies should be in 127.0.0.0/8
+		if (ans_record.rdata.find("127.") != 0)
 			return;
 
 		sockaddrs sresult;
@@ -192,4 +192,3 @@ class ModuleDNSBL : public Module
 };
 
 MODULE_INIT(ModuleDNSBL)
-

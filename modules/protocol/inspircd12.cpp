@@ -1,6 +1,6 @@
 /* inspircd 1.2 functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -879,7 +879,7 @@ struct IRCDMessageEncap : IRCDMessage
 
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
-		if (Anope::Match(Me->GetSID(), params[0]) == false)
+		if (!Anope::Match(Me->GetSID(), params[0]) && !Anope::Match(Me->GetName(), params[0]))
 			return;
 
 		if (SASL::sasl && params[1] == "SASL" && params.size() >= 6)
@@ -956,7 +956,7 @@ struct IRCDMessageFJoin : IRCDMessage
 			sju.second = User::Find(buf);
 			if (!sju.second)
 			{
-				Log(LOG_DEBUG) << "FJOIN for non-existent user " << buf << " on " << params[0];
+				Log(LOG_DEBUG) << "FJOIN for nonexistent user " << buf << " on " << params[0];
 				continue;
 			}
 
@@ -1153,12 +1153,7 @@ struct IRCDMessageMode : IRCDMessage
 			   users modes, we have to kludge this
 			   as it slightly breaks RFC1459
 			 */
-			User *u = source.GetUser();
-			// This can happen with server-origin modes.
-			if (!u)
-				u = User::Find(params[0]);
-			// if it's still null, drop it like fire.
-			// most likely situation was that server introduced a nick which we subsequently akilled
+			User *u = User::Find(params[0]);
 			if (u)
 				u->SetModesInternal(source, "%s", params[1].c_str());
 		}
@@ -1237,7 +1232,7 @@ struct IRCDMessageServer : IRCDMessage
 struct IRCDMessageSQuit : Message::SQuit
 {
 	IRCDMessageSQuit(Module *creator) : Message::SQuit(creator) { }
-	
+
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
 		if (params[0] == rsquit_id || params[0] == rsquit_server)

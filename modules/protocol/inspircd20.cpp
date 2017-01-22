@@ -1,6 +1,6 @@
 /* Inspircd 2.0 functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -394,8 +394,6 @@ struct IRCDMessageCapab : Message::Capab
 			chmodes.clear();
 			umodes.clear();
 			Servers::Capab.insert("SERVERS");
-			Servers::Capab.insert("CHGHOST");
-			Servers::Capab.insert("CHGIDENT");
 			Servers::Capab.insert("TOPICLOCK");
 			IRCD->CanSVSHold = false;
 		}
@@ -776,7 +774,7 @@ struct IRCDMessageEncap : IRCDMessage
 
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
-		if (Anope::Match(Me->GetSID(), params[0]) == false)
+		if (!Anope::Match(Me->GetSID(), params[0]) && !Anope::Match(Me->GetName(), params[0]))
 			return;
 
 		if (params[1] == "CHGIDENT")

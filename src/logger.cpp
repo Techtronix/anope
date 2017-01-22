@@ -1,6 +1,6 @@
 /* Logging routines.
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -82,7 +82,7 @@ Log::Log(LogType t, CommandSource &src, Command *_c, ChannelInfo *_ci) : u(src.G
 {
 	if (!c)
 		throw CoreException("Invalid pointers passed to Log::Log");
-	
+
 	if (type != LOG_COMMAND && type != LOG_OVERRIDE && type != LOG_ADMIN)
 		throw CoreException("This constructor does not support this log type");
 
@@ -129,7 +129,7 @@ Log::~Log()
 		std::cout << this->BuildPrefix() << this->buf.str() << std::endl;
 
 	FOREACH_MOD(OnLog, (this));
-	
+
 	if (Config)
 		for (unsigned i = 0; i < Config->LogInfos.size(); ++i)
 			if (Config->LogInfos[i].HasType(this->type, this->category))
@@ -145,7 +145,9 @@ Anope::string Log::FormatSource() const
 			return this->u->GetMask();
 	else if (nc)
 		return nc->display;
-	return "";
+	else if (source)
+		return source->GetNick();
+	return "<unknown>";
 }
 
 Anope::string Log::FormatCommand() const
@@ -375,7 +377,7 @@ void LogInfo::ProcessMessage(const Log *l)
 			}
 		}
 	}
-	
+
 	tm *tm = localtime(&Anope::CurTime);
 	if (tm->tm_mday != this->last_day)
 	{
@@ -405,4 +407,3 @@ void LogInfo::ProcessMessage(const Log *l)
 		lf->stream << GetTimeStamp() << " " << buffer << std::endl;
 	}
 }
-

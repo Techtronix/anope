@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2010-2016 Anope Team
+ * (C) 2010-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -456,7 +456,7 @@ Query MySQLService::BuildInsert(const Anope::string &table, unsigned int id, Dat
 
 		query.SetValue(it->first, buf, escape);
 	}
-	
+
 	return query;
 }
 
@@ -476,7 +476,7 @@ void MySQLService::Connect()
 
 	if (!connect)
 		throw SQL::Exception("Unable to connect to MySQL service " + this->name + ": " + mysql_error(this->sql));
-	
+
 	Log(LOG_DEBUG) << "Successfully connected to MySQL service " << this->name << " at " << this->server << ":" << this->port;
 }
 
@@ -553,4 +553,3 @@ void DispatcherThread::Run()
 }
 
 MODULE_INIT(ModuleSQL)
-

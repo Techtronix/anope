@@ -1,6 +1,6 @@
 /* Unreal IRCD 4 functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -300,6 +300,11 @@ class UnrealIRCdProto : public IRCDProto
 			UplinkSocket::Message() << "SVSPART " << user->GetUID() << " " << chan;
 	}
 
+	void SendGlobopsInternal(const MessageSource &source, const Anope::string &buf) anope_override
+	{
+		UplinkSocket::Message(Me) << "SENDUMODE o :from " << source.GetName() << ": " << buf;
+	}
+
 	void SendSWhois(const MessageSource &source, const Anope::string &who, const Anope::string &mask) anope_override
 	{
 		UplinkSocket::Message(source) << "SWHOIS " << who << " :" << mask;
@@ -562,7 +567,7 @@ class ChannelModeFlood : public ChannelModeParam
 				return true;
 		}
 		catch (const ConvertException &) { }
-	
+
 		/* '['<number><1 letter>[optional: '#'+1 letter],[next..]']'':'<number> */
 		size_t end_bracket = value.find(']', 1);
 		if (end_bracket == Anope::string::npos)
@@ -945,10 +950,10 @@ struct IRCDMessageNick : IRCDMessage
 			Server *s = Server::Find(params[5]);
 			if (s == NULL)
 			{
-				Log(LOG_DEBUG) << "User " << params[0] << " introduced from non-existent server " << params[5] << "?";
+				Log(LOG_DEBUG) << "User " << params[0] << " introduced from nonexistent server " << params[5] << "?";
 				return;
 			}
-		
+
 			NickAlias *na = NULL;
 
 			if (params[6] == "0")
@@ -1001,7 +1006,7 @@ struct IRCDMessageSASL : IRCDMessage
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
 		size_t p = params[1].find('!');
-		if (!SASL::sasl || p == Anope::string::npos)	
+		if (!SASL::sasl || p == Anope::string::npos)
 			return;
 
 		SASL::Message m;
@@ -1151,14 +1156,14 @@ struct IRCDMessageSJoin : IRCDMessage
 				sju.second = User::Find(buf);
 				if (!sju.second)
 				{
-					Log(LOG_DEBUG) << "SJOIN for non-existent user " << buf << " on " << params[1];
+					Log(LOG_DEBUG) << "SJOIN for nonexistent user " << buf << " on " << params[1];
 					continue;
 				}
 
 				users.push_back(sju);
 			}
 		}
-		
+
 		time_t ts = Anope::string(params[0]).is_pos_number_only() ? convertTo<time_t>(params[0]) : Anope::CurTime;
 		Message::Join::SJoin(source, params[1], ts, modes, users);
 

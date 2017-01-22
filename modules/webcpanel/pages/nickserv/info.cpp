@@ -1,5 +1,5 @@
 /*
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -72,7 +72,7 @@ bool WebCPanel::NickServ::Info::OnRequest(HTTPProvider *server, const Anope::str
 		}
 		else if (message.post_data["kill"] == "quick" && !na->nc->HasExt("KILL_QUICK"))
 		{
-			na->nc->Shrink<bool>("KILLPROTECT");
+			na->nc->Extend<bool>("KILLPROTECT");
 			na->nc->Extend<bool>("KILL_QUICK");
 			replacements["MESSAGES"] = "Kill updated";
 		}
@@ -110,9 +110,8 @@ bool WebCPanel::NickServ::Info::OnRequest(HTTPProvider *server, const Anope::str
 		replacements["KILL_QUICK"];
 	if (!na->nc->HasExt("KILLPROTECT") && !na->nc->HasExt("KILL_QUICK"))
 		replacements["KILL_OFF"];
-	
+
 	TemplateFileServer page("nickserv/info.html");
 	page.Serve(server, page_name, client, message, reply, replacements);
 	return true;
 }
-

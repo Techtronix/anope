@@ -1,6 +1,6 @@
 /* Registered channel functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -62,7 +62,7 @@ Serializable* AutoKick::Unserialize(Serializable *obj, Serialize::Data &data)
 	ChannelInfo *ci = ChannelInfo::Find(sci);
 	if (!ci)
 		return NULL;
-	
+
 	AutoKick *ak;
 	NickCore *nc = NickCore::Find(snc);
 	if (obj)
@@ -87,7 +87,7 @@ Serializable* AutoKick::Unserialize(Serializable *obj, Serialize::Data &data)
 		data["reason"] >> sreason;
 		data["mask"] >> smask;
 
-		if (nc)	
+		if (nc)
 			ak = ci->AddAkick(screator, nc, sreason, addtime, lastused);
 		else
 			ak = ci->AddAkick(screator, smask, sreason, addtime, lastused);
@@ -358,7 +358,7 @@ BotInfo *ChannelInfo::WhoSends() const
 {
 	if (this && this->bi)
 		return this->bi;
-	
+
 	BotInfo *ChanServ = Config->GetClient("ChanServ");
 	if (ChanServ)
 		return ChanServ;
@@ -578,7 +578,7 @@ void ChannelInfo::EraseAkick(unsigned index)
 {
 	if (this->akick->empty() || index >= this->akick->size())
 		return;
-	
+
 	delete this->GetAkick(index);
 }
 

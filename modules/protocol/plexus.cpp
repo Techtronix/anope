@@ -1,6 +1,6 @@
 /* Plexus 3+ IRCD functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -343,7 +343,7 @@ class ProtoPlexus : public Module
 	Message::Topic message_topic;
 	Message::Version message_version;
 	Message::Whois message_whois;
-	
+
 	/* Hybrid message handlers */
 	ServiceAlias message_bmask, message_eob, message_join, message_nick, message_sid, message_sjoin,
 			message_tburst, message_tmode;

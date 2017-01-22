@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2011-2016 Anope Team
+ * (C) 2011-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -299,7 +299,7 @@ Query SQLiteService::BuildInsert(const Anope::string &table, unsigned int id, Da
 		*it->second >> buf;
 		query.SetValue(it->first, buf);
 	}
-	
+
 	return query;
 }
 
@@ -332,4 +332,3 @@ Anope::string SQLiteService::FromUnixtime(time_t t)
 }
 
 MODULE_INIT(ModuleSQLite)
-

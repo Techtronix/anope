@@ -1,7 +1,7 @@
 /*
  *
  * (C) 2008-2011 Robin Burchell <w00t@inspircd.org>
- * (C) 2008-2016 Anope Team <team@anope.org>
+ * (C) 2008-2017 Anope Team <team@anope.org>
  *
  * Please read COPYING and README for further details.
  */
@@ -145,4 +145,3 @@ const std::list<Anope::string> OperType::GetPrivs() const
 	}
 	return priv_list;
 }
-

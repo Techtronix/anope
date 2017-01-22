@@ -1,6 +1,6 @@
 /* ircd-hybrid-8 protocol module
  *
- * (C) 2003-2016 Anope Team <team@anope.org>
+ * (C) 2003-2017 Anope Team <team@anope.org>
  * (C) 2012-2016 ircd-hybrid development team
  *
  * Please read COPYING and README for further details.
@@ -460,7 +460,7 @@ struct IRCDMessageSJoin : IRCDMessage
 			sju.second = User::Find(buf);
 			if (!sju.second)
 			{
-				Log(LOG_DEBUG) << "SJOIN for non-existent user " << buf << " on " << params[1];
+				Log(LOG_DEBUG) << "SJOIN for nonexistent user " << buf << " on " << params[1];
 				continue;
 			}
 

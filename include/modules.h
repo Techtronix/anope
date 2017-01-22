@@ -1,6 +1,6 @@
 /* Modular support
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -72,7 +72,7 @@
 /**
  * This #define allows us to call a method in all
  * loaded modules in a readable simple way, e.g.:
- * 
+ *
  * FOREACH_MOD(OnUserConnect, (user, exempt));
  */
 #define FOREACH_MOD(ename, args) \
@@ -104,7 +104,7 @@ else \
  * This define is similar to the one above but returns a result.
  * The first module to return a result other than EVENT_CONTINUE is the value to be accepted,
  * and any modules after are ignored. This is used like:
- * 
+ *
  * EventReturn MOD_RESULT;
  * FOREACH_RESULT(OnUserConnect, MOD_RESULT, (user, exempt));
  */

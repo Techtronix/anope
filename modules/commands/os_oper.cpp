@@ -1,6 +1,6 @@
 /* OperServ core functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -186,7 +186,7 @@ class CommandOSOper : public Command
 			if (params.size() > 2)
 				fulltype += " " + params[2];
 			OperType *ot = OperType::Find(fulltype);
-			if (ot == NULL)	
+			if (ot == NULL)
 				source.Reply(_("Oper type \002%s\002 has not been configured."), fulltype.c_str());
 			else
 			{

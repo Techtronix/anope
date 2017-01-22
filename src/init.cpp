@@ -1,6 +1,6 @@
 /* Initialization and related routines.
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -105,7 +105,7 @@ void Anope::Fork()
 {
 #ifndef _WIN32
 	kill(getppid(), SIGUSR2);
-	
+
 	freopen("/dev/null", "r", stdin);
 	freopen("/dev/null", "w", stdout);
 	freopen("/dev/null", "w", stderr);
@@ -558,4 +558,3 @@ void Anope::Init(int ac, char **av)
 
 	Serialize::CheckTypes();
 }
-

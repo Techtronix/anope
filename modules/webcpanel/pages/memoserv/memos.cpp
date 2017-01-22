@@ -1,5 +1,5 @@
 /*
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -112,4 +112,3 @@ bool WebCPanel::MemoServ::Memos::OnRequest(HTTPProvider *server, const Anope::st
 	page.Serve(server, page_name, client, message, reply, replacements);
 	return true;
 }
-

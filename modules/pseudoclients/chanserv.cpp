@@ -1,6 +1,6 @@
 /* ChanServ core functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -410,7 +410,7 @@ class ChanServCore : public Module, public ChanServService
 		}
 
 	}
-	
+
 	void OnChanRegistered(ChannelInfo *ci) anope_override
 	{
 		if (!persist || !ci->c)
@@ -476,4 +476,3 @@ class ChanServCore : public Module, public ChanServService
 };
 
 MODULE_INIT(ChanServCore)
-

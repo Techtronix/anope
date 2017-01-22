@@ -1,6 +1,6 @@
 /* OperServ core functions
  *
- * (C) 2003-2016 Anope Team
+ * (C) 2003-2017 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -187,7 +187,7 @@ class CommandOSForbid : public Command
 			if (!expiry.empty())
 			{
 				expiryt = Anope::DoTime(expiry);
-				if (expiryt == -1)
+				if (expiryt < 0)
 				{
 					source.Reply(BAD_EXPIRY_TIME);
 					return;
