@@ -146,8 +146,13 @@ Anope::string Log::FormatSource() const
 	else if (nc)
 		return nc->display;
 	else if (source)
-		return source->GetNick();
-	return "<unknown>";
+	{
+		Anope::string nickbuf = source->GetNick();
+		if (!nickbuf.empty() && !source->ip.empty())
+			nickbuf += " (" + source->ip + ")";
+		return nickbuf;
+	}
+	return "";
 }
 
 Anope::string Log::FormatCommand() const

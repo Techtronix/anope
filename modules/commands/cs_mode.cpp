@@ -654,6 +654,10 @@ class CommandCSMode : public Command
 								break;
 							if (!sep.GetToken(param))
 								break;
+
+							// Change to internal name, eg giving -b ~q:*
+							cm = cm->Unwrap(param);
+
 							if (adding)
 							{
 								if (IRCD->GetMaxListFor(ci->c) && ci->c->HasMode(cm->name) < IRCD->GetMaxListFor(ci->c))
@@ -667,10 +671,10 @@ class CommandCSMode : public Command
 										ci->c->RemoveMode(NULL, cm, v[j]);
 							}
 					}
-			}
-
-			Log(override ? LOG_OVERRIDE : LOG_COMMAND, source, this, ci) << "to set " << params[2] << (params.size() > 3 ? " " + params[3] : "");
+			} // switch
 		}
+
+		Log(override ? LOG_OVERRIDE : LOG_COMMAND, source, this, ci) << "to set " << modes << (params.size() > 3 ? " " + params[3] : "");
 	}
 
 	void DoClear(CommandSource &source, ChannelInfo *ci, const std::vector<Anope::string> &params)
@@ -706,6 +710,12 @@ class CommandCSMode : public Command
 		if (cm->type != MODE_STATUS && cm->type != MODE_LIST)
 		{
 			source.Reply(_("Mode %s is not a status or list mode."), param.c_str());
+			return;
+		}
+
+		if (!cm->mchar)
+		{
+			source.Reply(_("Mode %s is a virtual mode and can't be cleared."), cm->name.c_str());
 			return;
 		}
 
