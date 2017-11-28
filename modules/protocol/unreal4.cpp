@@ -158,7 +158,8 @@ class UnrealIRCdProto : public IRCDProto
 	/* JOIN */
 	void SendJoin(User *user, Channel *c, const ChannelStatus *status) anope_override
 	{
-		UplinkSocket::Message(Me) << "SJOIN " << c->creation_time << " " << c->name << " :" << user->GetUID();
+		UplinkSocket::Message(Me) << "SJOIN " << c->creation_time << " " << c->name
+			<< " +" << c->GetModes(true, true) << " :" << user->GetUID();
 		if (status)
 		{
 			/* First save the channel status incase uc->Status == status */
@@ -229,6 +230,15 @@ class UnrealIRCdProto : public IRCDProto
 		UplinkSocket::Message() << "PROTOCTL " << "EAUTH=" << Me->GetName() << ",,,Anope-" << Anope::VersionShort();
 		UplinkSocket::Message() << "PROTOCTL " << "SID=" << Me->GetSID();
 		SendServer(Me);
+	}
+
+	void SendSASLMechanisms(std::vector<Anope::string> &mechanisms) anope_override
+	{
+		Anope::string mechlist;
+		for (unsigned i = 0; i < mechanisms.size(); ++i)
+			mechlist += "," + mechanisms[i];
+
+		UplinkSocket::Message() << "MD client " << Me->GetName() << " saslmechlist :" << (mechanisms.empty() ? "" : mechlist.substr(1));
 	}
 
 	/* SVSHOLD - set */
@@ -356,22 +366,8 @@ class UnrealIRCdProto : public IRCDProto
 
 	void SendChannel(Channel *c) anope_override
 	{
-		/* Unreal does not support updating a channels TS without actually joining a user,
-		 * so we will join and part us now
-		 */
-		BotInfo *bi = c->ci->WhoSends();
-		if (!bi)
-			;
-		else if (c->FindUser(bi) == NULL)
-		{
-			bi->Join(c);
-			bi->Part(c);
-		}
-		else
-		{
-			bi->Part(c);
-			bi->Join(c);
-		}
+		UplinkSocket::Message(Me) << "SJOIN " << c->creation_time << " " << c->name
+			<< " +" << c->GetModes(true, true) << " :";
 	}
 
 	void SendSASLMessage(const SASL::Message &message) anope_override
