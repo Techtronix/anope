@@ -45,9 +45,9 @@ class CommandOSnotinchan : public Command
         {
 		this->SetDesc(_("List, or apply command to, anyone not in a channel."));
 		if(IRCD->GetProtocolName().find_ci("unreal") != Anope::string::npos)
-			this->SetSyntax(_("{\037LIST\037|\037JOIN\037|\037TSHUN\037|\037KILL\037|\037AKILL\037} [\037reason\037]"));
+			this->SetSyntax(_("{\037LIST\037|\037GECOS\037|\037JOIN\037|\037TSHUN\037|\037KILL\037|\037AKILL\037} [\037reason\037]"));
 		else
-			this->SetSyntax(_("{\037LIST\037|\037JOIN\037|\037KILL\037|\037AKILL\037} [\037reason\037]"));
+			this->SetSyntax(_("{\037LIST\037|\037GECOS\037|\037JOIN\037|\037KILL\037|\037AKILL\037} [\037reason\037]"));
 	}
 
 	void Execute(CommandSource &source, const std::vector<Anope::string> &params) anope_override
@@ -62,12 +62,11 @@ class CommandOSnotinchan : public Command
 		
 		expires += Anope::CurTime;
                 ListFormatter list(source.GetAccount());
-                list.AddColumn(_("Name")).AddColumn(_("Mask"));
 		Log(LOG_ADMIN, source, this) << subcommand << " " << reason;
 
 		if (!subcommand.equals_ci("TSHUN") && !subcommand.equals_ci("LIST") && 
 		    !subcommand.equals_ci("KILL") && !subcommand.equals_ci("AKILL") && 
-		    !subcommand.equals_ci("JOIN"))
+		    !subcommand.equals_ci("JOIN") && !subcommand.equals_ci("GECOS"))
 		{
 			source.Reply(_("You must specify a valid option.\n"
 					" \n"));
@@ -78,6 +77,14 @@ class CommandOSnotinchan : public Command
 		if (!reason.empty()) 
 		{
 			rreason = reason;
+		}
+		else if (subcommand.equals_ci("LIST"))
+		{
+                	list.AddColumn(_("Name")).AddColumn(_("Mask"));
+		}
+		else if (subcommand.equals_ci("GECOS"))
+		{
+                	list.AddColumn(_("Name")).AddColumn(_("Realname"));
 		}
 		else if (subcommand.equals_ci("KILL"))
 		{
@@ -112,6 +119,13 @@ class CommandOSnotinchan : public Command
 			if (u2->chans.empty() && !(u2->server == Me) )
 			{
 				counter++;
+				if (subcommand.equals_ci("GECOS"))
+				{
+					ListFormatter::ListEntry entry;
+					entry["Name"] = u2->nick;
+					entry["Realname"] = u2->realname;
+					list.AddEntry(entry);
+				}
 				if (subcommand.equals_ci("LIST"))
 				{
 					ListFormatter::ListEntry entry;
@@ -147,7 +161,7 @@ class CommandOSnotinchan : public Command
 
 			}
 		}
-		if (subcommand.equals_ci("LIST"))
+		if (subcommand.equals_ci("LIST") || subcommand.equals_ci("GECOS"))
 		{
 			std::vector<Anope::string> replies;
 			list.Process(replies);
@@ -193,7 +207,7 @@ class OSnotinchan : public Module
 	CommandOSnotinchan commandosnotinchan;
 
  public:
-	OSnotinchan(const Anope::string &modname, const Anope::string &creator) : Module(modname, creator, VENDOR),
+	OSnotinchan(const Anope::string &modname, const Anope::string &creator) : Module(modname, creator, EXTRA),
 		commandosnotinchan(this)
 	{
 		if(Anope::VersionMajor() < 2)
@@ -201,7 +215,7 @@ class OSnotinchan : public Module
 			throw ModuleException("Requires version 2.x.x of Anope.");
 		}
 		this->SetAuthor("Azander");
-		this->SetVersion("1.0.1");
+		this->SetVersion("1.0.2");
 	}
 
 };
