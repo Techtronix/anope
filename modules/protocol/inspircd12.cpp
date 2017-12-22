@@ -416,12 +416,6 @@ class InspIRCd12Proto : public IRCDProto
 		if (!vhost.empty())
 			UplinkSocket::Message(Me) << "ENCAP " << uid.substr(0, 3) << " CHGHOST " << uid << " " << vhost;
 
-		Anope::string target = uid.substr(0, 3);
-		if (!vident.empty())
-			UplinkSocket::Message(Me) << "ENCAP " << target << " CHGIDENT " << uid << " " << vident;
-		if (!vhost.empty())
-			UplinkSocket::Message(Me) << "ENCAP " << target << " CHGHOST " << uid << " " << vhost;
-
 		SASLUser su;
 		su.uid = uid;
 		su.acc = acc;
