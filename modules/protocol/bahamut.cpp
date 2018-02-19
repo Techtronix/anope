@@ -106,14 +106,10 @@ class BahamutIRCdProto : public IRCDProto
 	/* SZLINE */
 	void SendSZLine(User *, const XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
 		/* this will likely fail so its only here for legacy */
 		UplinkSocket::Message() << "SZLINE " << x->GetHost() << " :" << x->GetReason();
 		/* this is how we are supposed to deal with it */
-		UplinkSocket::Message() << "AKILL " << x->GetHost() << " * " << timeleft << " " << x->by << " " << Anope::CurTime << " :" << x->GetReason();
+		UplinkSocket::Message() << "AKILL " << x->GetHost() << " * " << (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->by << " " << Anope::CurTime << " :" << x->GetReason();
 	}
 
 	/* SVSNOOP */
@@ -220,11 +216,7 @@ class BahamutIRCdProto : public IRCDProto
 			}
 		}
 
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800)
-			timeleft = 172800;
-		UplinkSocket::Message() << "AKILL " << x->GetHost() << " " << x->GetUser() << " " << timeleft << " " << x->by << " " << Anope::CurTime << " :" << x->GetReason();
+		UplinkSocket::Message() << "AKILL " << x->GetHost() << " " << x->GetUser() << " " << (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->by << " " << Anope::CurTime << " :" << x->GetReason();
 	}
 
 	/*

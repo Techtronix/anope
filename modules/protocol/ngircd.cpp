@@ -32,11 +32,7 @@ class ngIRCdProto : public IRCDProto
 
 	void SendAkill(User *u, XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-		UplinkSocket::Message(Me) << "GLINE " << x->mask << " " << timeleft << " :" << x->GetReason() << " (" << x->by << ")";
+		UplinkSocket::Message(Me) << "GLINE " << x->mask << " " << (x->expires ? x->expires - Anope::CurTime : 0) << " :" << x->GetReason() << " (" << x->by << ")";
 	}
 
 	void SendAkillDel(const XLine *x) anope_override
@@ -116,7 +112,7 @@ class ngIRCdProto : public IRCDProto
 	void SendLogout(User *u) anope_override
 	{
 		UplinkSocket::Message(Me) << "METADATA " << u->GetUID() << " accountname :";
-	} 
+	}
 
 	/* SERVER name hop descript */
 	void SendServer(const Server *server) anope_override

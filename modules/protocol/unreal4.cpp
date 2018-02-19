@@ -121,11 +121,7 @@ class UnrealIRCdProto : public IRCDProto
 			}
 		}
 
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-		UplinkSocket::Message() << "TKL + G " << x->GetUser() << " " << x->GetHost() << " " << x->by << " " << Anope::CurTime + timeleft << " " << x->created << " :" << x->GetReason();
+		UplinkSocket::Message() << "TKL + G " << x->GetUser() << " " << x->GetHost() << " " << x->by << " " << Anope::CurTime + (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->created << " :" << x->GetReason();
 	}
 
 	void SendSVSKillInternal(const MessageSource &source, User *user, const Anope::string &buf) anope_override
@@ -271,11 +267,7 @@ class UnrealIRCdProto : public IRCDProto
 	/* SZLINE */
 	void SendSZLine(User *, const XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-		UplinkSocket::Message() << "TKL + Z * " << x->GetHost() << " " << x->by << " " << Anope::CurTime + timeleft << " " << x->created << " :" << x->GetReason();
+		UplinkSocket::Message() << "TKL + Z * " << x->GetHost() << " " << x->by << " " << Anope::CurTime + (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->created << " :" << x->GetReason();
 	}
 
 	/* SGLINE */

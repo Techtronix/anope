@@ -63,13 +63,7 @@ class RatboxProto : public IRCDProto
 
 	void SendSQLine(User *, const XLine *x) anope_override
 	{
-		/* Calculate the time left before this would expire, capping it at 2 days */
-		time_t timeleft = x->expires - Anope::CurTime;
-
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-
-		UplinkSocket::Message(FindIntroduced()) << "ENCAP * RESV " << timeleft << " " << x->mask << " 0 :" << x->GetReason();
+		UplinkSocket::Message(FindIntroduced()) << "ENCAP * RESV " << (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->mask << " 0 :" << x->GetReason();
 	}
 
 	void SendSQLineDel(const XLine *x) anope_override

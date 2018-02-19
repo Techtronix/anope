@@ -171,11 +171,6 @@ class InspIRCd12Proto : public IRCDProto
 
 	void SendAkill(User *u, XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-
 		/* InspIRCd may support regex bans, if they do we can send this and forget about it
 		 * Mask is expected in format: 'n!u@h\sr' and spaces as '\s'
 		 * We remove the '//' and replace '#' and any ' ' with '\s'
@@ -191,7 +186,7 @@ class InspIRCd12Proto : public IRCDProto
 				mask = mask.replace(h, 1, "\\s");
 				mask = mask.replace_all_cs(" ", "\\s");
 			}
-			SendAddLine("R", mask, timeleft, x->by, x->GetReason());
+			SendAddLine("R", mask, (x->expires ? x->expires - Anope::CurTime : 0), x->by, x->GetReason());
 			return;
 		}
 		else if (x->IsRegex() || x->HasNickOrReal())
@@ -228,7 +223,7 @@ class InspIRCd12Proto : public IRCDProto
 			}
 		}
 
-		SendAddLine("G", x->GetUser() + "@" + x->GetHost(), timeleft, x->by, x->GetReason());
+		SendAddLine("G", x->GetUser() + "@" + x->GetHost(), (x->expires ? x->expires - Anope::CurTime : 0), x->by, x->GetReason());
 	}
 
 	void SendNumericInternal(int numeric, const Anope::string &dest, const Anope::string &buf) anope_override
@@ -307,11 +302,7 @@ class InspIRCd12Proto : public IRCDProto
 	/* SQLINE */
 	void SendSQLine(User *, const XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-		SendAddLine("Q", x->mask, timeleft, x->by, x->GetReason());
+		SendAddLine("Q", x->mask, (x->expires ? x->expires - Anope::CurTime : 0), x->by, x->GetReason());
 	}
 
 	void SendVhost(User *u, const Anope::string &vIdent, const Anope::string &vhost) anope_override
@@ -348,11 +339,7 @@ class InspIRCd12Proto : public IRCDProto
 	/* SZLINE */
 	void SendSZLine(User *, const XLine *x) anope_override
 	{
-		// Calculate the time left before this would expire, capping it at 2 days
-		time_t timeleft = x->expires - Anope::CurTime;
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-		SendAddLine("Z", x->GetHost(), timeleft, x->by, x->GetReason());
+		SendAddLine("Z", x->GetHost(), (x->expires ? x->expires - Anope::CurTime : 0), x->by, x->GetReason());
 	}
 
 	void SendSVSJoin(const MessageSource &source, User *u, const Anope::string &chan, const Anope::string &) anope_override
@@ -426,7 +413,7 @@ class InspIRCd12Proto : public IRCDProto
 	void SendSVSLogin(const Anope::string &uid, const Anope::string &acc, const Anope::string &vident, const Anope::string &vhost) anope_override
 	{
 		UplinkSocket::Message(Me) << "METADATA " << uid << " accountname :" << acc;
-		
+
 		if (!vident.empty())
 			UplinkSocket::Message(Me) << "ENCAP " << uid.substr(0, 3) << " CHGIDENT " << uid << " " << vident;
 		if (!vhost.empty())

@@ -89,13 +89,7 @@ class HybridProto : public IRCDProto
 
 	void SendSZLine(User *, const XLine *x) anope_override
 	{
-		/* Calculate the time left before this would expire, capping it at 2 days */
-		time_t timeleft = x->expires - Anope::CurTime;
-
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-
-		UplinkSocket::Message(Config->GetClient("OperServ")) << "DLINE * " << timeleft << " " << x->GetHost() << " :" << x->GetReason();
+		UplinkSocket::Message(Config->GetClient("OperServ")) << "DLINE * " << (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->GetHost() << " :" << x->GetReason();
 	}
 
 	void SendAkillDel(const XLine *x) anope_override
@@ -162,13 +156,7 @@ class HybridProto : public IRCDProto
 					<< u->realname << " matches " << old->mask;
 		}
 
-		/* Calculate the time left before this would expire, capping it at 2 days */
-		time_t timeleft = x->expires - Anope::CurTime;
-
-		if (timeleft > 172800 || !x->expires)
-			timeleft = 172800;
-
-		UplinkSocket::Message(Config->GetClient("OperServ")) << "KLINE * " << timeleft << " " << x->GetUser() << " " << x->GetHost() << " :" << x->GetReason();
+		UplinkSocket::Message(Config->GetClient("OperServ")) << "KLINE * " << (x->expires ? x->expires - Anope::CurTime : 0) << " " << x->GetUser() << " " << x->GetHost() << " :" << x->GetReason();
 	}
 
 	void SendServer(const Server *server) anope_override
