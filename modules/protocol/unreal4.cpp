@@ -313,7 +313,7 @@ class UnrealIRCdProto : public IRCDProto
 
 	void SendSWhois(const MessageSource &source, const Anope::string &who, const Anope::string &mask) anope_override
 	{
-		UplinkSocket::Message(source) << "SWHOIS " << who << " :" << mask;
+		UplinkSocket::Message() << "SWHOIS " << who << " :" << mask;
 	}
 
 	void SendEOB() anope_override
