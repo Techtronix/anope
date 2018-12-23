@@ -1,17 +1,17 @@
- 
+
 #include "module.h"
 
 class CommandRedirect: public Command
 {
     std::vector<Anope::string> defaults;
-    
+
 public:
   CommandRedirect(Module *creator) : Command(creator, "chanserv/redirect", 3, 3)
   {
     this->SetDesc(_("Redirects nick from channel."));
-    this->SetSyntax(_("\037nick\037 \037channel\037"));    
+    this->SetSyntax(_("\037nick\037 \037channel\037"));
   }
-  
+
   void Execute(CommandSource &source, const std::vector<Anope::string> &params) anope_override
   {
     const Anope::string &chan = params[0];
@@ -22,7 +22,7 @@ public:
     ChannelInfo *ci = ChannelInfo::Find(chan);
     Channel *c = Channel::Find(chan);
     User *u2 = User::Find(target, true);
-    
+
     if (!c)
     {
       source.Reply(CHAN_X_NOT_IN_USE, chan.c_str());
@@ -33,15 +33,15 @@ public:
       source.Reply(CHAN_X_NOT_REGISTERED, chan.c_str());
       return;
     }
-    
-    if (!u2) 
-    {      
-      source.Reply(_("Can't find target: %s"), target.c_str());      
+
+    if (!u2)
+    {
+      source.Reply(_("Can't find target: %s"), target.c_str());
       return;
     }
-    
+
     AccessGroup u_access = source.AccessFor(ci);
-    
+
     if (!u_access.HasPriv("KICK") && !source.HasPriv("chanserv/kick"))
 			source.Reply(ACCESS_DENIED);
     else if (u2)
@@ -61,7 +61,7 @@ public:
 	}
     }
   }
-  
+
   bool OnHelp(CommandSource &source, const Anope::string &subcommand) anope_override
   {
 	  this->SendSyntax(source);
@@ -70,7 +70,7 @@ public:
 	    "\n"
 			"Examples: \n"
 			"!redirect luser #support          - redirects nick luser from active channel to a #support\n"
-			"/cs redirect #main luser #support - redirects nick luser from #main to a #support"));	  
+			"/cs redirect #main luser #support - redirects nick luser from #main to a #support"));
 	  return true;
   }
 };
@@ -78,14 +78,14 @@ public:
 class CommandTeleport: public Command
 {
     std::vector<Anope::string> defaults;
-    
+
 public:
   CommandTeleport(Module *creator) : Command(creator, "chanserv/teleport", 3, 3)
   {
     this->SetDesc(_("Teleports nick from channel."));
-    this->SetSyntax(_("\037nick\037 \037channel\037"));    
+    this->SetSyntax(_("\037nick\037 \037channel\037"));
   }
-  
+
   void Execute(CommandSource &source, const std::vector<Anope::string> &params) anope_override
   {
     const Anope::string &chan = params[0];
@@ -97,10 +97,10 @@ public:
     ChannelInfo *ci = ChannelInfo::Find(chan);
     Channel *c = Channel::Find(chan);
     User *u2 = User::Find(target, true);
-    
+
     Configuration::Block *block = Config->GetCommand(source);
     const Anope::string &mode = block->Get<Anope::string>("mode", "BAN");
-    
+
     if (!c)
     {
       source.Reply(CHAN_X_NOT_IN_USE, chan.c_str());
@@ -111,15 +111,15 @@ public:
       source.Reply(CHAN_X_NOT_REGISTERED, chan.c_str());
       return;
     }
-    
-    if (!u2) 
-    {      
-      source.Reply(_("Can't find target: %s"), target.c_str());      
+
+    if (!u2)
+    {
+      source.Reply(_("Can't find target: %s"), target.c_str());
       return;
     }
-    
+
     AccessGroup u_access = source.AccessFor(ci);
-    
+
     if (!u_access.HasPriv("KICK") && !source.HasPriv("chanserv/kick"))
 			source.Reply(ACCESS_DENIED);
     else if (u2)
@@ -134,9 +134,9 @@ public:
 	else
 	{
 	  source.Reply(_("Teleported %s form %s to %s"),u2->nick.c_str(),chan.c_str(),targetChan.c_str());
-	  
+
 	  Anope::string mask = ci->GetIdealBan(u2);
-	  if (!c->HasMode(mode,mask)) 
+	  if (!c->HasMode(mode,mask))
 	  {
 	    c->SetMode(NULL,mode,mask);
 	  }
@@ -145,7 +145,7 @@ public:
 	}
     }
   }
-  
+
   bool OnHelp(CommandSource &source, const Anope::string &subcommand) anope_override
   {
 	  this->SendSyntax(source);
@@ -164,15 +164,15 @@ class CSREDTEL: public Module
 {
   CommandRedirect commandRedirect;
   CommandTeleport commandTeleport;
-  
+
 public:
   CSREDTEL(const Anope::string &modname, const Anope::string &creator) : Module(modname,creator,VENDOR), commandRedirect(this), commandTeleport(this)
-  {    
+  {
     if (Anope::VersionMajor() < 2)
     {
       throw ModuleException("Requires version 2 of Anope.");
     }
-    
+
     this->SetAuthor("Darkus");
     this->SetVersion("0.0.1");
   }

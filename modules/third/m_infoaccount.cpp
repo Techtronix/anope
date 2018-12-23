@@ -30,4 +30,3 @@ class ModuleInfoAccount : public Module
 };
 
 MODULE_INIT(ModuleInfoAccount)
-

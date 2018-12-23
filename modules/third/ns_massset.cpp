@@ -5,11 +5,11 @@
 * Version: 0.2
 * --------------------------------------------------------------
 * This module provides the ability for a Services Oper with the
-* nickserv/massset privilege to change NickServ settings for 
+* nickserv/massset privilege to change NickServ settings for
 * all registered users.
 * This module is usually only loaded when needed, to undo something
 * you set incorrectly in the configs default options, and wish to
-* put right. 
+* put right.
 * Note that using this module some time down the line, undoing
 * users desired settings, may "annoy" some.
 * --------------------------------------------------------------
@@ -248,7 +248,7 @@ public:
         }
         else if (option.equals_ci("CHANSTATS"))
         {
-            if (!Config->GetModule("m_chanstats"));
+            if (!Config->GetModule("m_chanstats"))
             {
                 source.Reply(_("m_chanstats is not loaded"));
                 return;

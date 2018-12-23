@@ -99,4 +99,3 @@ class EPosix : public Module
 };
 
 MODULE_INIT(EPosix)
-

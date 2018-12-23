@@ -5,7 +5,7 @@
  **********************************************
  * Module used in: NickServ
  * Syntax: /msg NickServ SAREGISTER 'Nick' 'Password' 'Email'
- * 
+ *
  * This module lets a services operator with the
  * "nickserv/saregister" privileges register a
  * nickname other than their own.
@@ -16,7 +16,7 @@
  * Completely rewritten for Anope 2.0.
  * Confirmed to work on 2.0.5.
  * Did this stop working in a future version? Let me know on irc.mdtech.us.
- * 
+ *
  ************
  * To use, include the following in your configuration:
  * module { name = "ns_saregister" }
@@ -46,7 +46,7 @@ class CommandNSSARegister : public Command
 		size_t nicklen = u_nick.length();
 		Anope::string pass = params[1];
 		Anope::string email = params[2];
-		
+
 		// ** Copied from ns_register.cpp ** - If this module breaks in future versions, it is most likely due to a change in the main registration code.
 		const Anope::string &nsregister = Config->GetModule(this->owner)->Get<const Anope::string>("registration");
 
@@ -232,4 +232,3 @@ static bool SendRegmail(User *u, const NickAlias *na, BotInfo *bi)
 }
 
 MODULE_INIT(NSSARegister)
-

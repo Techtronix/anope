@@ -4,7 +4,7 @@
 * Date:    23rd February 2014
 * Version: 2.0
 * --------------------------------------------------------------
-* This module displays some stats to users when they become a 
+* This module displays some stats to users when they become a
 * Services Operator on /ns identify
 * --------------------------------------------------------------
 * This module does not add any commands and has no config options
@@ -62,4 +62,3 @@ public:
 };
 
 MODULE_INIT(OSStatsOnID)
-

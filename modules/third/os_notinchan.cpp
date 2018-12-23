@@ -7,7 +7,7 @@
  *
  * Syntax: NOTINCHAN {LIST|JOIN|KILL|AKILL|TSHUN} [reason]
  *
- * If a reason is not specified then the default reason from the module configuration will be used.  If those 
+ * If a reason is not specified then the default reason from the module configuration will be used.  If those
  * are missing or left blank then a generaic "Not In Channel Management" reason it automaticly appeneded.
  *
  * tshunreason : Used as the default message when shunning users not in channel.
@@ -20,7 +20,7 @@
  *
  * Modify the following as necessary and put it in your operserv config:
 
-module { 
+module {
 	name = "os_notinchan"
 	tshunreason = "Rejoin us when you are willing to join us publicly."
 	killreason = "Non-Channel kill"
@@ -28,7 +28,7 @@ module {
 	akillexpire = "7m"
 	idlechan = "#idle"
 }
-command { service = "OperServ"; name="NOTINCHAN"; command = "operserv/notinchan"; permission = "operserv/akill"; }    
+command { service = "OperServ"; name="NOTINCHAN"; command = "operserv/notinchan"; permission = "operserv/akill"; }
 
  *
  */
@@ -59,13 +59,13 @@ class CommandOSnotinchan : public Command
 		std::set<Anope::string> modes;
 		Anope::map<User *> ordered_map;
 		time_t expires = Config->GetModule(this->owner)->Get<time_t>("akillexpire", "5m");
-		
+
 		expires += Anope::CurTime;
                 ListFormatter list(source.GetAccount());
 		Log(LOG_ADMIN, source, this) << subcommand << " " << reason;
 
-		if (!subcommand.equals_ci("TSHUN") && !subcommand.equals_ci("LIST") && 
-		    !subcommand.equals_ci("KILL") && !subcommand.equals_ci("AKILL") && 
+		if (!subcommand.equals_ci("TSHUN") && !subcommand.equals_ci("LIST") &&
+		    !subcommand.equals_ci("KILL") && !subcommand.equals_ci("AKILL") &&
 		    !subcommand.equals_ci("JOIN") && !subcommand.equals_ci("GECOS"))
 		{
 			source.Reply(_("You must specify a valid option.\n"
@@ -74,7 +74,7 @@ class CommandOSnotinchan : public Command
 			return;
 		}
 
-		if (!reason.empty()) 
+		if (!reason.empty())
 		{
 			rreason = reason;
 		}
@@ -177,7 +177,7 @@ class CommandOSnotinchan : public Command
 		}
 		else
 		{
-			source.Reply(_("%s affected %d users."),subcommand.c_str(),counter); 
+			source.Reply(_("%s affected %d users."),subcommand.c_str(),counter);
 		}
 
 	}
