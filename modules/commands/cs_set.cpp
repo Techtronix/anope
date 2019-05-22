@@ -947,7 +947,7 @@ class CommandCSSetSuccessor : public Command
 	CommandCSSetSuccessor(Module *creator, const Anope::string &cname = "chanserv/set/successor") : Command(creator, cname, 1, 2)
 	{
 		this->SetDesc(_("Set the successor for a channel"));
-		this->SetSyntax(_("\037channel\037 \037nick\037"));
+		this->SetSyntax(_("\037channel\037 [\037nick\037]"));
 	}
 
 	void Execute(CommandSource &source, const std::vector<Anope::string> &params) anope_override
@@ -1024,11 +1024,13 @@ class CommandCSSetSuccessor : public Command
 				"channel will be dropped."));
 		unsigned max_reg = Config->GetModule("chanserv")->Get<unsigned>("maxregistered");
 		if (max_reg)
+		{
 			source.Reply(" ");
 			source.Reply(_("Note, however, if the successor already has too many\n"
 				"channels registered (%d), they will not be able to\n"
 				"become the new founder and it will be as if the\n"
 				"channel had no successor set."), max_reg);
+		}
 		return true;
 	}
 };
