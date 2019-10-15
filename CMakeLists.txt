@@ -14,6 +14,9 @@ endif(COMMAND cmake_policy)
 project(Anope CXX)
 enable_language(C)
 
+# Enable compile_commands to aid in IDE support
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Detect the version of CMake for the later conditional checks
 execute_process(COMMAND ${CMAKE_COMMAND} --version OUTPUT_VARIABLE VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX REPLACE "cmake version 2\\.(.*)" "\\1" ONLY_VERSION "${VERSION}")
