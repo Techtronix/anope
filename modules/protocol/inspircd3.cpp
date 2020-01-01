@@ -67,6 +67,7 @@ class InspIRCd3Proto : public IRCDProto
 		CanCertFP = true;
 		RequiresID = true;
 		MaxModes = 20;
+		MaxLine = 4096;
 	}
 
 	void SendConnect() anope_override
@@ -574,9 +575,9 @@ namespace InspIRCdExtban
 	class AccountMatcher : public InspIRCdExtBan
 	{
 	 public:
-	 	AccountMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
-	 	{
-	 	}
+		AccountMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
+		{
+		}
 
 		bool Matches(User *u, const Entry *e) anope_override
 		{
@@ -590,46 +591,46 @@ namespace InspIRCdExtban
 	class RealnameMatcher : public InspIRCdExtBan
 	{
 	 public:
-	 	RealnameMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
-	 	{
-	 	}
+		RealnameMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
+		{
+		}
 
-	 	bool Matches(User *u, const Entry *e) anope_override
-	 	{
-	 		const Anope::string &mask = e->GetMask();
-	 		Anope::string real_mask = mask.substr(2);
-	 		return Anope::Match(u->realname, real_mask);
-	 	}
+		bool Matches(User *u, const Entry *e) anope_override
+		{
+			const Anope::string &mask = e->GetMask();
+			Anope::string real_mask = mask.substr(2);
+			return Anope::Match(u->realname, real_mask);
+		}
 	};
 
 	class ServerMatcher : public InspIRCdExtBan
 	{
 	 public:
-	 	ServerMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
-	 	{
-	 	}
+		ServerMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
+		{
+		}
 
-	 	bool Matches(User *u, const Entry *e) anope_override
-	 	{
-	 		const Anope::string &mask = e->GetMask();
-	 		Anope::string real_mask = mask.substr(2);
-	 		return Anope::Match(u->server->GetName(), real_mask);
-	 	}
+		bool Matches(User *u, const Entry *e) anope_override
+		{
+			const Anope::string &mask = e->GetMask();
+			Anope::string real_mask = mask.substr(2);
+			return Anope::Match(u->server->GetName(), real_mask);
+		}
 	};
 
 	class FingerprintMatcher : public InspIRCdExtBan
 	{
 	 public:
-	 	FingerprintMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
-	 	{
-	 	}
+		FingerprintMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
+		{
+		}
 
-	 	bool Matches(User *u, const Entry *e) anope_override
-	 	{
-	 		const Anope::string &mask = e->GetMask();
-	 		Anope::string real_mask = mask.substr(2);
-	 		return !u->fingerprint.empty() && Anope::Match(u->fingerprint, real_mask);
-	 	}
+		bool Matches(User *u, const Entry *e) anope_override
+		{
+			const Anope::string &mask = e->GetMask();
+			Anope::string real_mask = mask.substr(2);
+			return !u->fingerprint.empty() && Anope::Match(u->fingerprint, real_mask);
+		}
 	};
 
 	class UnidentifiedMatcher : public InspIRCdExtBan
@@ -641,8 +642,8 @@ namespace InspIRCdExtban
 
 		bool Matches(User *u, const Entry *e) anope_override
 		{
-	 		const Anope::string &mask = e->GetMask();
-	 		Anope::string real_mask = mask.substr(2);
+			const Anope::string &mask = e->GetMask();
+			Anope::string real_mask = mask.substr(2);
 			return !u->Account() && Entry("BAN", real_mask).Matches(u);
 		}
 	};
@@ -1146,15 +1147,15 @@ struct IRCDMessageCapab : Message::Capab
 		{
 			if (!Servers::Capab.count("SERVICES"))
 			{
-				UplinkSocket::Message() << "ERROR :m_services_account.so is not loaded. This is required by Anope";
-				Anope::QuitReason = "ERROR: Remote server does not have the m_services_account module loaded, and this is required.";
+				UplinkSocket::Message() << "ERROR :The services_account module is not loaded. This is required by Anope";
+				Anope::QuitReason = "ERROR: Remote server does not have the services_account module loaded, and this is required.";
 				Anope::Quitting = true;
 				return;
 			}
 			if (!ModeManager::FindUserModeByName("PRIV"))
 			{
-				UplinkSocket::Message() << "ERROR :m_hidechans.so is not loaded. This is required by Anope";
-				Anope::QuitReason = "ERROR: Remote server does not have the m_hidechans module loaded, and this is required.";
+				UplinkSocket::Message() << "ERROR :The hidechans module is not loaded. This is required by Anope";
+				Anope::QuitReason = "ERROR: Remote server does not have the hidechans module loaded, and this is required.";
 				Anope::Quitting = true;
 				return;
 			}
@@ -1306,17 +1307,19 @@ class IRCDMessageMetadata : IRCDMessage
 	const bool &do_mlock;
 
  public:
-	IRCDMessageMetadata(Module *creator, const bool &handle_topiclock, const bool &handle_mlock) : IRCDMessage(creator, "METADATA", 3), do_topiclock(handle_topiclock), do_mlock(handle_mlock) { SetFlag(IRCDMESSAGE_REQUIRE_SERVER); }
+	IRCDMessageMetadata(Module *creator, const bool &handle_topiclock, const bool &handle_mlock) : IRCDMessage(creator, "METADATA", 3), do_topiclock(handle_topiclock), do_mlock(handle_mlock) { SetFlag(IRCDMESSAGE_REQUIRE_SERVER); SetFlag(IRCDMESSAGE_SOFT_LIMIT); }
 
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
 		// We deliberately ignore non-bursting servers to avoid pseudoserver fights
-		if ((params[0][0] == '#') && (!source.GetServer()->IsSynced()))
+		// Channel METADATA has an additional parameter: the channel TS
+		// Received: :715 METADATA #chan 1572026333 mlock :nt
+		if ((params[0][0] == '#') && (params.size() > 3) && (!source.GetServer()->IsSynced()))
 		{
 			Channel *c = Channel::Find(params[0]);
 			if (c && c->ci)
 			{
-				if ((do_mlock) && (params[1] == "mlock"))
+				if ((do_mlock) && (params[2] == "mlock"))
 				{
 					ModeLocks *modelocks = c->ci->GetExt<ModeLocks>("modelocks");
 					Anope::string modes;
@@ -1324,15 +1327,15 @@ class IRCDMessageMetadata : IRCDMessage
 						modes = modelocks->GetMLockAsString(false).replace_all_cs("+", "").replace_all_cs("-", "");
 
 					// Mode lock string is not what we say it is?
-					if (modes != params[2])
-						UplinkSocket::Message(Me) << "METADATA " << c->name << " mlock :" << modes;
+					if (modes != params[3])
+						UplinkSocket::Message(Me) << "METADATA " << c->name << " " << c->creation_time << " mlock :" << modes;
 				}
-				else if ((do_topiclock) && (params[1] == "topiclock"))
+				else if ((do_topiclock) && (params[2] == "topiclock"))
 				{
-					bool mystate = c->ci->GetExt<bool>("TOPICLOCK");
-					bool serverstate = (params[2] == "1");
+					bool mystate = c->ci->HasExt("TOPICLOCK");
+					bool serverstate = (params[3] == "1");
 					if (mystate != serverstate)
-						UplinkSocket::Message(Me) << "METADATA " << c->name << " topiclock :" << (mystate ? "1" : "");
+						UplinkSocket::Message(Me) << "METADATA " << c->name << " " << c->creation_time << " topiclock :" << (mystate ? "1" : "");
 				}
 			}
 		}
