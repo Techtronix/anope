@@ -2,3 +2,4 @@ config.cache
 include/sysconf.h
 build/
 compile_commands.json
+run/
