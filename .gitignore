@@ -3,3 +3,4 @@ include/sysconf.h
 build/
 compile_commands.json
 run/
+.clangd/
