@@ -1,123 +1,159 @@
 /*
- * Copyright 2016 Michael Hazell <michaelhazell@hotmail.com>
+ * HostServ NetHost: Add default vhosts for new users using their account names
+ *
+ * Copyright (C) 2016-2021 Michael Hazell <michaelhazell@hotmail.com>
  *
  * You may use this module as long as you follow the terms of the GPLv3
  * Originally forked from https://gist.github.com/7330c12ce7a03c030871
  *
  * Configuration:
- * module { name = "hs_nethost"; prefix = "user/"; suffix = ""; }
- * 
- * This will format a user's vhost as user/foo, and broadcast the vhost change to
+ * module { name = "hs_nethost"; prefix = "user/"; suffix = ""; hashprefix = "/x-"; setifnone = true; }
+ *
+ * This will format a user's vhost as user/foo (or user/foo-bar/x-XXXX), and broadcast the vhost change to
  * other modules.
  */
- 
+
 #include "module.h"
- 
+
 class HSNetHost : public Module
 {
+	bool setifnone;
+	Anope::string hashprefix;
 	Anope::string prefix;
 	Anope::string suffix;
-	bool broadcast;
-	Reference<BotInfo> HostServ;
-	
+
  private:
+
+	NickAlias* GetMatchingNAFromNC(NickCore *nc)
+	{
+		for (std::vector<NickAlias *>::const_iterator it = nc->aliases->begin(); it != nc->aliases->end(); ++it)
+		{
+			if ((*it)->nick == nc->display)
+				return ((*it));
+		}
+		return NULL;
+	}
+
+	Anope::string GenerateHash(NickCore *nc)
+	{
+		std::stringstream ss;
+		ss << std::hex << nc->GetId();
+		return ss.str();
+	}
+
 	void SetNetHost(NickAlias *na)
 	{
-		Anope::string vhost = prefix + na->nc->display + suffix;
-		Anope::string setter = "HostServ";
-		Anope::string ident; // We don't handle Vidents
- 
-		if(!IRCD->IsHostValid(vhost))
+		// If the NickAlias has an existing host not set by this module, do not touch it
+		// This avoids overwriting manually set/requested vhosts
+		if (na->HasVhost() && (na->GetVhostCreator() != "HostServ"))
 			return;
- 
-		na->SetVhost(ident, vhost, setter);
-		
-		
-		/* Sigh! Another issue. If a network has module:hs_group::synconset set to true, then the module
-		 * will "sync" the vhost to the account. Since this is the first NickAlias, though, it will be
-		 * syncing for no reason. This actually causes the vhost to be set TWICE, causing the usual
-		 * "Your vhost of xx is now activated" message to be sent twice to the user. So, to fix the issue
-		 * we must set the vhost manually and update the Anope state
-		 */
-		if (broadcast)
+
+		Anope::string nick = na->nick;
+		Anope::string vhost;
+		bool usehash = false;
+
+		Anope::string valid_nick_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
+
+		// This operates nick, not na->nick, so that changes can be made later.
+		for (Anope::string::iterator it = nick.begin(); it != nick.end(); ++it)
 		{
-			FOREACH_MOD(OnSetVhost, (na));
-		}
-		else
-		{
-			User *u = User::Find(na->nick);
-			
-			if (u && u->Account() == na->nc)
+			if (valid_nick_chars.find((*it)) == Anope::string::npos)
 			{
-				IRCD->SendVhost(u, na->GetVhostIdent(), na->GetVhostHost());
-				u->vhost = na->GetVhostHost();
-				u->UpdateHost();
-				
-				if (IRCD->CanSetVIdent && !na->GetVhostIdent().empty())
-					u->SetVIdent(na->GetVhostIdent());
-				
-				if (!na->GetVhostIdent().empty())
-				{
-					u->SendMessage(HostServ, _("Your vhost of \002%s\002@\002%s\002 is now activated."), na->GetVhostIdent().c_str(), na->GetVhostHost().c_str());
-				}
-				else
-				{
-					u->SendMessage(HostServ, _("Your vhost of \002%s\002 is now activated."), na->GetVhostHost().c_str());
-				}
+				usehash = true;
+				(*it) = '-';
 			}
 		}
+
+		// Construct vhost
+		vhost = prefix + nick + suffix;
+
+		// If the nickname contained invalid characters, append a hash since those were replaced with a -
+		if (usehash)
+			vhost += hashprefix + GenerateHash(na->nc);
+
+		if (!IRCD->IsHostValid(vhost))
+		{
+			Log(Config->GetClient("HostServ"), "nethost") << "Tried setting vhost " << vhost << " on " << na->nick << ", but it was not valid!";
+			return;
+		}
+
+		na->SetVhost(na->GetVhostIdent(), vhost, "HostServ");
+		FOREACH_MOD(OnSetVhost, (na));
 	}
- 
- 
- 
+
  public:
 	HSNetHost(const Anope::string &modname, const Anope::string &creator):
 	Module(modname, creator, THIRD)
 	{
 		this->SetAuthor("Techman");
-		this->SetVersion("1.0");
-		
+		this->SetVersion("2.0.0");
+
 		if (!IRCD || !IRCD->CanSetVHost)
 			throw ModuleException("Your IRCd does not support vhosts");
+
+		if (!ModuleManager::FindModule("hostserv"))
+			throw ModuleException("HostServ is required for this module to be effective.");
 	}
- 
+
 	void Prioritize() anope_override
 	{
-		/* We set ourselves as priority last because we don't want vhosts being added to 
-		 * ns_access on registration if that's enabled by the network
-		 */
+		// We set ourselves as priority last because we don't want vhosts being added to
+		// ns_access on registration if that's enabled by the network
 		ModuleManager::SetPriority(this, PRIORITY_LAST);
 	}
-	
+
+	void OnChangeCoreDisplay(NickCore *nc, const Anope::string &newdisplay) anope_override
+	{
+		// Send the matching NickAlias so that nick is set
+		// This requires newdisplay, so this loop is different
+		for (std::vector<NickAlias *>::const_iterator it = nc->aliases->begin(); it != nc->aliases->end(); ++it)
+		{
+			if ((*it)->nick == newdisplay)
+			{
+				SetNetHost((*it));
+				break;
+			}
+		}
+	}
+
 	void OnNickRegister(User *user, NickAlias *na, const Anope::string &) anope_override
 	{
-		/* If it's anything else, we assume they have a nick confirmation system */
+		// If it's anything else, we assume they have a nick confirmation system
 		if (Config->GetModule("ns_register")->Get<const Anope::string>("registration") == "none")
 			SetNetHost(na);
-	}	
-	
+	}
+
 	void OnNickConfirm(User *user, NickCore *nc) anope_override
 	{
+		// It is assumed there is only one NickAlias in the account
 		NickAlias *na = nc->aliases->at(0);
 		SetNetHost(na);
 	}
-	
+
+	void OnNickIdentify(User *u) anope_override
+	{
+		NickCore *nc = u->Account();
+
+		if (!nc || !setifnone)
+			return;
+
+		// Send the NickAlias that matches the account name
+		SetNetHost(GetMatchingNAFromNC(nc));
+	}
+
+	void OnUserLogin(User *u) anope_override
+	{
+		OnNickIdentify(u);
+	}
+
 	void OnReload(Configuration::Conf *conf) anope_override
 	{
 		Configuration::Block *block = conf->GetModule(this);
+		setifnone = block->Get<bool>("setifnone", "false");
+		hashprefix = block->Get<Anope::string>("hashprefix", "");
 		prefix = block->Get<Anope::string>("prefix", "");
 		suffix = block->Get<Anope::string>("suffix", "");
-		broadcast = block->Get<bool>("broadcast", true);
-		
-		/* For when using broadcast = false */
-		const Anope::string &hsnick = conf->GetModule("hostserv")->Get<const Anope::string>("client");
-		if (hsnick.empty())
-			throw ConfigException("m_hostserv: <client> must be defined");
-		BotInfo *bi = BotInfo::Find(hsnick, true);
-		if (!bi)
-			throw ConfigException("m_hostserv: no bot named " + hsnick);
-		HostServ = bi;
 	}
 };
- 
+
 MODULE_INIT(HSNetHost)
