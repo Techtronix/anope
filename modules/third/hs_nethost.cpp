@@ -26,7 +26,7 @@ class HSNetHost : public Module
 
 	NickAlias* GetMatchingNAFromNC(NickCore *nc)
 	{
-		for (std::vector<NickAlias *>::const_iterator it = nc->aliases->begin(); it != nc->aliases->end(); ++it)
+		for (std::vector<NickAlias *>::iterator it = nc->aliases->begin(); it != nc->aliases->end(); ++it)
 		{
 			if ((*it)->nick == nc->display)
 				return ((*it));
@@ -54,7 +54,7 @@ class HSNetHost : public Module
 
 		Anope::string valid_nick_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
 
-		// This operates nick, not na->nick, so that changes can be made later.
+		// This operates on nick, not na->nick, so that changes can be made later.
 		for (Anope::string::iterator it = nick.begin(); it != nick.end(); ++it)
 		{
 			if (valid_nick_chars.find((*it)) == Anope::string::npos)
@@ -86,7 +86,7 @@ class HSNetHost : public Module
 	Module(modname, creator, THIRD)
 	{
 		this->SetAuthor("Techman");
-		this->SetVersion("2.0.0");
+		this->SetVersion("2.0.1");
 
 		if (!IRCD || !IRCD->CanSetVHost)
 			throw ModuleException("Your IRCd does not support vhosts");
@@ -132,13 +132,18 @@ class HSNetHost : public Module
 
 	void OnNickIdentify(User *u) anope_override
 	{
-		NickCore *nc = u->Account();
+		// If not configured to set a nethost when no vhost is present, just quit
+		if (!setifnone)
+			return;
 
-		if (!nc || !setifnone)
+		NickCore *nc = u->Account();
+		if (!nc)
 			return;
 
 		// Send the NickAlias that matches the account name
-		SetNetHost(GetMatchingNAFromNC(nc));
+		NickAlias *na = GetMatchingNAFromNC(nc);
+		if (!na->HasVhost())
+			SetNetHost(na);
 	}
 
 	void OnUserLogin(User *u) anope_override
