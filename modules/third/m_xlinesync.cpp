@@ -8,7 +8,7 @@
  * Parts based on m_xlinetoakill by genius3000
  *
  * Configuration:
- * module { name = "m_xlinesync"; }
+ * module { name = "m_xlinesync"; silent = false; }
  */
 
 #include "module.h"
@@ -28,6 +28,7 @@ enum InspIRCdXLineType
 class XLineSync : public Module
 {
 	BotInfo *OperServ;
+	bool silent;
 
  public:
 	XLineSync(const Anope::string &modname, const Anope::string &creator)
@@ -44,7 +45,7 @@ class XLineSync : public Module
 			throw ModuleException("This module requires OperServ, as well as the os_akill and os_sxline modules.");
 
 		this->SetAuthor("Techman");
-		this->SetVersion("1.0.0");
+		this->SetVersion("1.0.1");
 	}
 
 	void OnReload(Configuration::Conf *conf) anope_override
@@ -52,6 +53,10 @@ class XLineSync : public Module
 		OperServ = conf->GetClient("OperServ");
 		if (!OperServ)
 			throw ModuleException("OperServ could not be found.");
+
+		Configuration::Block *block = conf->GetModule(this);
+		silent = block->Get<bool>("silent", "false");
+
 	}
 
 	EventReturn OnMessage(MessageSource &source, Anope::string &command, std::vector<Anope::string> &params)
@@ -100,7 +105,8 @@ class XLineSync : public Module
 
 					XLine *x = new XLine(mask, setby, expires, reason, XLineManager::GenerateUID());
 					sqlines->AddXLine(x);
-					Log(OperServ, "sqline/sync") << "X-line (" << rawtype << ") sync added SQLINE on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
+					if (!silent)
+						Log(OperServ, "sqline/sync") << "X-line (" << rawtype << ") sync added SQLINE on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
 					break;
 				}
 
@@ -120,7 +126,8 @@ class XLineSync : public Module
 
 					XLine *x = new XLine(mask, setby, expires, reason, XLineManager::GenerateUID());
 					akills->AddXLine(x);
-					Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync added AKILL on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
+					if (!silent)
+						Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync added AKILL on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
 					break;
 				}
 				case TYPE_ZLINE:
@@ -136,7 +143,8 @@ class XLineSync : public Module
 
 					XLine *x = new XLine(mask, setby, expires, reason, XLineManager::GenerateUID());
 					akills->AddXLine(x);
-					Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync added AKILL on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
+					if (!silent)
+						Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync added AKILL on " << mask << " (" << reason << "), expires in " << (expires ? Anope::Duration(expires - settime) : "never") << " [set by " << setby << "]";
 					break;
 				}
 
@@ -157,7 +165,8 @@ class XLineSync : public Module
 						return EVENT_CONTINUE;
 
 					sqlines->DelXLine(x);
-					Log(OperServ, "sqline/sync") << "X-line (" << rawtype << ") sync removed SQLINE on " << mask;
+					if (!silent)
+						Log(OperServ, "sqline/sync") << "X-line (" << rawtype << ") sync removed SQLINE on " << mask;
 					break;
 				}
 
@@ -177,7 +186,8 @@ class XLineSync : public Module
 						return EVENT_CONTINUE;
 
 					akills->DelXLine(x);
-					Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync removed AKILL on " << mask;
+					if (!silent)
+						Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync removed AKILL on " << mask;
 					break;
 				}
 
@@ -192,7 +202,8 @@ class XLineSync : public Module
 						return EVENT_CONTINUE;
 
 					akills->DelXLine(x);
-					Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync removed AKILL on " << mask;
+					if (!silent)
+						Log(OperServ, "akill/sync") << "X-line (" << rawtype << ") sync removed AKILL on " << mask;
 					break;
 				}
 
