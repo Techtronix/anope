@@ -74,6 +74,7 @@ class HSNetHost : public Module
 		if (!IRCD->IsHostValid(vhost))
 		{
 			Log(Config->GetClient("HostServ"), "nethost") << "Tried setting vhost " << vhost << " on " << na->nick << ", but it was not valid!";
+			Log(Config->GetClient("HostServ"), "nethost") << "Check if your IRCd supports all of the characters in the vhost, and that Anope is configured to allow them (check vhost_chars in services.conf).";
 			return;
 		}
 
@@ -86,7 +87,7 @@ class HSNetHost : public Module
 	Module(modname, creator, THIRD)
 	{
 		this->SetAuthor("Techman");
-		this->SetVersion("2.0.1");
+		this->SetVersion("2.0.2");
 
 		if (!IRCD || !IRCD->CanSetVHost)
 			throw ModuleException("Your IRCd does not support vhosts");
