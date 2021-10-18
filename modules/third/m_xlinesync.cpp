@@ -9,6 +9,7 @@
  *
  * Configuration:
  * module { name = "m_xlinesync"; silent = false; }
+ * command { service = "OperServ"; name = "XLINESYNC"; command = "operserv/xlinesync"; permission = "operserv/xlinesync" ; }
  */
 
 #include "module.h"
@@ -25,15 +26,56 @@ enum InspIRCdXLineType
 	TYPE_ZLINE
 };
 
+class CommandOSXLineSync : public Command
+{
+ public:
+	CommandOSXLineSync(Module *creator) : Command(creator, "operserv/xlinesync", 1, 1)
+	{
+		this->SetDesc(_("Sync X-Lines in Anope to the IRCd"));
+		this->SetSyntax(_("SYNC"));
+	}
+
+	void Execute(CommandSource &source, const std::vector<Anope::string> &params) anope_override
+	{
+		// Send AKILLs
+		for (size_t i = 0; i < akills->GetCount(); ++i)
+		{
+			XLine *x = akills->GetEntry(i);
+			if (x)
+				akills->Send(NULL, x);
+		}
+
+		// Send SQLines
+		for (size_t i = 0; i < sqlines->GetCount(); ++i)
+		{
+			XLine *x = sqlines->GetEntry(i);
+			if (x)
+				sqlines->Send(NULL, x);
+		}
+		source.Reply("Synced AKILLs and SQLines with the IRCd");
+		Log(LOG_ADMIN, source, this) << "to sync AKILLs and SQLines with the IRCd";
+	}
+
+	bool OnHelp(CommandSource &source, const Anope::string &subcommand) anope_override
+	{
+		this->SendSyntax(source);
+		source.Reply(" ");
+		source.Reply(_("Sync X-Lines in Anope to the IRCd. This currently supports AKILL and SQLINE."));
+		return true;
+	}
+};
+
 class XLineSync : public Module
 {
 	BotInfo *OperServ;
+	CommandOSXLineSync commandosxlinesync;
 	bool silent;
 
  public:
 	XLineSync(const Anope::string &modname, const Anope::string &creator)
 		: Module(modname, creator, THIRD)
 		, OperServ(NULL)
+		, commandosxlinesync(this)
 	{
 		if (Anope::VersionMajor() != 2 || Anope::VersionMinor() != 0)
 			throw ModuleException("This module only works on Anope 2.0.x.");
@@ -45,7 +87,7 @@ class XLineSync : public Module
 			throw ModuleException("This module requires OperServ, as well as the os_akill and os_sxline modules.");
 
 		this->SetAuthor("Techman");
-		this->SetVersion("1.0.1");
+		this->SetVersion("1.1.0");
 	}
 
 	void OnReload(Configuration::Conf *conf) anope_override
