@@ -87,7 +87,7 @@ class HSNetHost : public Module
 	Module(modname, creator, THIRD)
 	{
 		this->SetAuthor("Techman");
-		this->SetVersion("2.0.2");
+		this->SetVersion("2.0.3");
 
 		if (!IRCD || !IRCD->CanSetVHost)
 			throw ModuleException("Your IRCd does not support vhosts");
@@ -139,6 +139,10 @@ class HSNetHost : public Module
 
 		NickCore *nc = u->Account();
 		if (!nc)
+			return;
+
+		// If the account is marked as unconfirmed, quit
+		if (nc->HasExt("UNCONFIRMED"))
 			return;
 
 		// Send the NickAlias that matches the account name
