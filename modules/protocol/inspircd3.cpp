@@ -1210,7 +1210,7 @@ struct IRCDMessageEncap : IRCDMessage
 				return;
 
 			u->SetIdent(params[3]);
-			UplinkSocket::Message(u) << "FIDENT " << params[3];
+			UplinkSocket::Message(u) << "FIDENT :" << params[3];
 		}
 		else if (params[1] == "CHGHOST")
 		{
@@ -1219,7 +1219,7 @@ struct IRCDMessageEncap : IRCDMessage
 				return;
 
 			u->SetDisplayedHost(params[3]);
-			UplinkSocket::Message(u) << "FHOST " << params[3];
+			UplinkSocket::Message(u) << "FHOST :" << params[3];
 		}
 		else if (params[1] == "CHGNAME")
 		{
@@ -1228,7 +1228,7 @@ struct IRCDMessageEncap : IRCDMessage
 				return;
 
 			u->SetRealname(params[3]);
-			UplinkSocket::Message(u) << "FNAME " << params[3];
+			UplinkSocket::Message(u) << "FNAME :" << params[3];
 		}
 		else if (SASL::sasl && params[1] == "SASL" && params.size() >= 6)
 		{
@@ -1609,7 +1609,7 @@ struct IRCDMessageIJoin : IRCDMessage
 		{
 			// When receiving an IJOIN, first check if the target channel exists. If it does not exist,
 			// ignore the join (that is, do not create the channel) and send a RESYNC back to the source.
-			UplinkSocket::Message(Me) <<  "RESYNC " << params[0];
+			UplinkSocket::Message(Me) <<  "RESYNC :" << params[0];
 			return;
 		}
 
