@@ -29,7 +29,7 @@ class HSNetHost : public Module
 		for (std::vector<NickAlias *>::iterator it = nc->aliases->begin(); it != nc->aliases->end(); ++it)
 		{
 			if ((*it)->nick == nc->display)
-				return ((*it));
+				return *it;
 		}
 		return NULL;
 	}
@@ -57,10 +57,10 @@ class HSNetHost : public Module
 		// This operates on nick, not na->nick, so that changes can be made later.
 		for (Anope::string::iterator it = nick.begin(); it != nick.end(); ++it)
 		{
-			if (valid_nick_chars.find((*it)) == Anope::string::npos)
+			if (valid_nick_chars.find(*it) == Anope::string::npos)
 			{
 				usehash = true;
-				(*it) = '-';
+				*it = '-';
 			}
 		}
 
@@ -87,7 +87,7 @@ class HSNetHost : public Module
 	Module(modname, creator, THIRD)
 	{
 		this->SetAuthor("Techman");
-		this->SetVersion("2.0.3");
+		this->SetVersion("2.0.4");
 
 		if (!IRCD || !IRCD->CanSetVHost)
 			throw ModuleException("Your IRCd does not support vhosts");
@@ -111,20 +111,20 @@ class HSNetHost : public Module
 		{
 			if ((*it)->nick == newdisplay)
 			{
-				SetNetHost((*it));
+				SetNetHost(*it);
 				break;
 			}
 		}
 	}
 
-	void OnNickRegister(User *user, NickAlias *na, const Anope::string &) anope_override
+	void OnNickRegister(User *, NickAlias *na, const Anope::string &) anope_override
 	{
 		// If it's anything else, we assume they have a nick confirmation system
 		if (Config->GetModule("ns_register")->Get<const Anope::string>("registration") == "none")
 			SetNetHost(na);
 	}
 
-	void OnNickConfirm(User *user, NickCore *nc) anope_override
+	void OnNickConfirm(User *, NickCore *nc) anope_override
 	{
 		// It is assumed there is only one NickAlias in the account
 		NickAlias *na = nc->aliases->at(0);
@@ -160,9 +160,9 @@ class HSNetHost : public Module
 	{
 		Configuration::Block *block = conf->GetModule(this);
 		setifnone = block->Get<bool>("setifnone", "false");
-		hashprefix = block->Get<Anope::string>("hashprefix", "");
-		prefix = block->Get<Anope::string>("prefix", "");
-		suffix = block->Get<Anope::string>("suffix", "");
+		hashprefix = block->Get<const Anope::string>("hashprefix", "");
+		prefix = block->Get<const Anope::string>("prefix", "");
+		suffix = block->Get<const Anope::string>("suffix", "");
 	}
 };
 
