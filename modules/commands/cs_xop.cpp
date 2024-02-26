@@ -1,6 +1,6 @@
 /* ChanServ core functions
  *
- * (C) 2003-2023 Anope Team
+ * (C) 2003-2024 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -570,7 +570,7 @@ class CommandCSXOP : public Command
 		if (!access_cmd.empty() || !flags_cmd.empty())
 		{
 			source.Reply(_("Alternative methods of modifying channel access lists are\n"
-					"available. "));
+					"available."));
 			if (!access_cmd.empty())
 				source.Reply(_("See \002%s%s HELP %s\002 for more information\n"
 						"about the access list."), Config->StrictPrivmsg.c_str(), access_bi->nick.c_str(), access_cmd.c_str());
