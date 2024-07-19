@@ -66,9 +66,7 @@ class InspIRCd3Proto : public IRCDProto
 		CanSetVHost = true;
 		CanSetVIdent = true;
 		CanSQLine = true;
-		CanSQLineChannel = true;
 		CanSZLine = true;
-		CanSVSHold = true;
 		CanCertFP = true;
 		RequiresID = true;
 		MaxModes = 20;
@@ -182,7 +180,7 @@ class InspIRCd3Proto : public IRCDProto
 
 	void SendTopic(const MessageSource &source, Channel *c) anope_override
 	{
-		if (Servers::Capab.count("SVSTOPIC"))
+		if (Servers::Capab.count("TOPICLOCK"))
 		{
 			UplinkSocket::Message(c->WhoSends()) << "SVSTOPIC " << c->name << " " << c->topic_ts << " " << c->topic_setter << " :" << c->topic;
 		}
@@ -382,9 +380,12 @@ class InspIRCd3Proto : public IRCDProto
 		SendAddLine("Z", x->GetHost(), (x->expires ? x->expires - Anope::CurTime : 0), x->by, x->GetReason());
 	}
 
-	void SendSVSJoin(const MessageSource &source, User *u, const Anope::string &chan, const Anope::string &other) anope_override
+	void SendSVSJoin(const MessageSource &source, User *u, const Anope::string &chan, const Anope::string &key) anope_override
 	{
-		UplinkSocket::Message(source) << "SVSJOIN " << u->GetUID() << " " << chan;
+		if (key.empty())
+			UplinkSocket::Message(source) << "SVSJOIN " << u->GetUID() << " " << chan;
+		else
+			UplinkSocket::Message(source) << "SVSJOIN " << u->GetUID() << " " << chan << " :" << key;
 	}
 
 	void SendSVSPart(const MessageSource &source, User *u, const Anope::string &chan, const Anope::string &param) anope_override
@@ -430,6 +431,7 @@ class InspIRCd3Proto : public IRCDProto
 		if (na->nc->HasExt("UNCONFIRMED"))
 			return;
 
+		IRCD->SendVhost(u, na->GetVhostIdent(), na->GetVhostHost());
 		UplinkSocket::Message(Me) << "METADATA " << u->GetUID() << " accountid :" << na->nc->GetId();
 		UplinkSocket::Message(Me) << "METADATA " << u->GetUID() << " accountname :" << na->nc->display;
 	}
@@ -525,6 +527,12 @@ class InspIRCdAutoOpMode : public ChannelModeList
 	}
 };
 
+// NOTE: matchers for the following extbans have not been implemented:
+//
+// * class(n):    data not available
+// * country(G):  data not available
+// * gateway(w):  data not available in v3
+// * realmask(a): todo
 class InspIRCdExtBan : public ChannelModeVirtual<ChannelModeList>
 {
 	char ext;
@@ -563,7 +571,7 @@ namespace InspIRCdExtban
 		bool Matches(User *u, const Entry *e) anope_override
 		{
 			const Anope::string &mask = e->GetMask();
-			Anope::string real_mask = mask.substr(3);
+			Anope::string real_mask = mask.substr(2);
 
 			return Entry(this->name, real_mask).Matches(u);
 		}
@@ -580,7 +588,7 @@ namespace InspIRCdExtban
 		{
 			const Anope::string &mask = e->GetMask();
 
-			Anope::string channel = mask.substr(3);
+			Anope::string channel = mask.substr(2);
 
 			ChannelMode *cm = NULL;
 			if (channel[0] != '#')
@@ -678,6 +686,25 @@ namespace InspIRCdExtban
 			const Anope::string &mask = e->GetMask();
 			Anope::string real_mask = mask.substr(2);
 			return !u->Account() && Entry("BAN", real_mask).Matches(u);
+		}
+	};
+
+	class OperTypeMatcher : public InspIRCdExtBan
+	{
+	 public:
+		OperTypeMatcher(const Anope::string &mname, const Anope::string &mbase, char c) : InspIRCdExtBan(mname, mbase, c)
+		{
+		}
+
+		bool Matches(User *u, const Entry *e) anope_override
+		{
+			Anope::string *opertype = u->GetExt<Anope::string>("opertype");
+			if (!opertype)
+				return false; // Not an operator.
+
+			const Anope::string &mask = e->GetMask();
+			Anope::string real_mask = mask.substr(2);
+			return Anope::Match(opertype->replace_all_cs(' ', '_'), real_mask);
 		}
 	};
 }
@@ -892,8 +919,7 @@ struct IRCDMessageCapab : Message::Capab
 			}
 
 			/* reset CAPAB */
-			Servers::Capab.insert("SERVERS");
-			Servers::Capab.insert("TOPICLOCK");
+			Servers::Capab.clear();
 			IRCD->CanSQLineChannel = false;
 			IRCD->CanSVSHold = false;
 			IRCD->DefaultPseudoclientModes = "+oI";
@@ -998,7 +1024,10 @@ struct IRCDMessageCapab : Message::Capab
 				else if (mode.name.equals_cs("op"))
 					cm = new ChannelModeStatus("OP", mode.letter, mode.symbol, mode.level);
 				else if (mode.name.equals_cs("operonly"))
+				{
 					cm = new ChannelModeOperOnly("OPERONLY", mode.letter);
+					ModeManager::AddChannelMode(new InspIRCdExtban::OperTypeMatcher("OPERTYPEBAN", "BAN", 'O'));
+				}
 				else if (mode.name.equals_cs("operprefix"))
 					cm = new ChannelModeStatus("OPERPREFIX", mode.letter, mode.symbol, mode.level);
 				else if (mode.name.equals_cs("permanent"))
@@ -1196,11 +1225,15 @@ struct IRCDMessageCapab : Message::Capab
 				return;
 			}
 			if (!IRCD->CanSVSHold)
-				Log() << "SVSHOLD missing, Usage disabled until module is loaded.";
+				Log() << "The remote server does not have the svshold module; fake users will be used for nick protection until the module is loaded.";
+			if (!IRCD->CanSQLineChannel)
+				Log() << "The remote server does not have the cban module; services will manually enforce forbidden channels until the module is loaded.";
 			if (!Servers::Capab.count("CHGHOST"))
-				Log() << "CHGHOST missing, Usage disabled until module is loaded.";
+				Log() << "The remote server does not have the chghost module; vhosts are disabled until the module is loaded.";
 			if (!Servers::Capab.count("CHGIDENT"))
-				Log() << "CHGIDENT missing, Usage disabled until module is loaded.";
+				Log() << "The remote server does not have the chgident module; vidents are disabled until the module is loaded.";
+			if (!Servers::Capab.count("GLOBOPS"))
+				Log() << "The remote server does not have the globops module; oper notices will be sent as announcements until the module is loaded.";
 		}
 
 		Message::Capab::Run(source, params);
@@ -1442,12 +1475,16 @@ class IRCDMessageMetadata : IRCDMessage
 					required = true;
 				else if (module.equals_cs("m_hidechans.so"))
 					required = true;
+				else if (module.equals_cs("m_cban.so=glob") && plus)
+					IRCD->CanSQLineChannel = true;
+				if (module.equals_cs("m_cban.so") && !plus)
+					IRCD->CanSQLineChannel = false;
 				else if (module.equals_cs("m_chghost.so"))
 					capab = "CHGHOST";
 				else if (module.equals_cs("m_chgident.so"))
 					capab = "CHGIDENT";
 				else if (module.equals_cs("m_svshold.so"))
-					capab = "SVSHOLD";
+					IRCD->CanSVSHold = plus;
 				else if (module.equals_cs("m_rline.so"))
 					capab = "RLINE";
 				else if (module.equals_cs("m_topiclock.so"))
@@ -1462,9 +1499,9 @@ class IRCDMessageMetadata : IRCDMessage
 				}
 				else
 				{
-					if (plus)
+					if (plus && !capab.empty())
 						Servers::Capab.insert(capab);
-					else
+					else if (!capab.empty())
 						Servers::Capab.erase(capab);
 
 					Log() << "InspIRCd " << (plus ? "loaded" : "unloaded") << " module " << module << ", adjusted functionality";
@@ -1688,7 +1725,9 @@ struct IRCDMessageNick : IRCDMessage
 
 struct IRCDMessageOperType : IRCDMessage
 {
-	IRCDMessageOperType(Module *creator) : IRCDMessage(creator, "OPERTYPE", 0) { SetFlag(IRCDMESSAGE_SOFT_LIMIT); SetFlag(IRCDMESSAGE_REQUIRE_USER); }
+	PrimitiveExtensibleItem<Anope::string> opertype;
+
+	IRCDMessageOperType(Module *creator) : IRCDMessage(creator, "OPERTYPE", 1), opertype(creator, "opertype") { SetFlag(IRCDMESSAGE_REQUIRE_USER); }
 
 	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
 	{
@@ -1697,6 +1736,8 @@ struct IRCDMessageOperType : IRCDMessage
 		User *u = source.GetUser();
 		if (!u->HasMode("OPER"))
 			u->SetModesInternal(source, "+o");
+
+		opertype.Set(u, params[0]);
 	}
 };
 
@@ -1782,16 +1823,6 @@ struct IRCDMessageSQuit : Message::SQuit
 	}
 };
 
-struct IRCDMessageTime : IRCDMessage
-{
-	IRCDMessageTime(Module *creator) : IRCDMessage(creator, "TIME", 2) { }
-
-	void Run(MessageSource &source, const std::vector<Anope::string> &params) anope_override
-	{
-		UplinkSocket::Message(Me) << "TIME " << source.GetSource() << " " << params[1] << " " << Anope::CurTime;
-	}
-};
-
 struct IRCDMessageUID : IRCDMessage
 {
 	IRCDMessageUID(Module *creator) : IRCDMessage(creator, "UID", 8) { SetFlag(IRCDMESSAGE_REQUIRE_SERVER); SetFlag(IRCDMESSAGE_SOFT_LIMIT); }
@@ -1855,6 +1886,7 @@ class ProtoInspIRCd3 : public Module
 	Message::Privmsg message_privmsg;
 	Message::Quit message_quit;
 	Message::Stats message_stats;
+	Message::Time message_time;
 
 	/* Our message handlers */
 	IRCDMessageAway message_away;
@@ -1878,7 +1910,6 @@ class ProtoInspIRCd3 : public Module
 	IRCDMessageSave message_save;
 	IRCDMessageServer message_server;
 	IRCDMessageSQuit message_squit;
-	IRCDMessageTime message_time;
 	IRCDMessageUID message_uid;
 
 	bool use_server_side_topiclock, use_server_side_mlock;
@@ -1892,12 +1923,12 @@ class ProtoInspIRCd3 : public Module
 	ProtoInspIRCd3(const Anope::string &modname, const Anope::string &creator) : Module(modname, creator, PROTOCOL | VENDOR),
 		ircd_proto(this), ssl(this, "ssl"),
 		message_error(this), message_invite(this), message_kill(this), message_motd(this), message_notice(this),
-		message_part(this), message_privmsg(this), message_quit(this), message_stats(this),
+		message_part(this), message_privmsg(this), message_quit(this), message_stats(this), message_time(this),
 		message_away(this), message_capab(this), message_encap(this), message_endburst(this), message_fhost(this),
 		message_fident(this), message_fjoin(this), message_fmode(this), message_ftopic(this), message_idle(this),
 		message_ijoin(this), message_kick(this), message_metadata(this, use_server_side_topiclock, use_server_side_mlock, ircd_proto.maxlist),
 		message_mode(this), message_nick(this), message_opertype(this), message_ping(this), message_rsquit(this),
-		message_save(this), message_server(this), message_squit(this), message_time(this), message_uid(this)
+		message_save(this), message_server(this), message_squit(this), message_uid(this)
 	{
 	}
 
