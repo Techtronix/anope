@@ -1,6 +1,6 @@
 /* OperServ core functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -402,6 +402,11 @@ class OSIgnore : public Module
 		ignoredata_type("IgnoreData", IgnoreDataImpl::Unserialize), osignoreservice(this), commandosignore(this)
 	{
 
+	}
+
+	void Prioritize() anope_override
+	{
+		ModuleManager::SetPriority(this, I_OnBotPrivmsg, PRIORITY_FIRST);
 	}
 
 	EventReturn OnBotPrivmsg(User *u, BotInfo *bi, Anope::string &message) anope_override

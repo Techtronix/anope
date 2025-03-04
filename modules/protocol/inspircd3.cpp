@@ -1,6 +1,6 @@
 /* InspIRCd 3.0 functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -685,7 +685,7 @@ namespace InspIRCdExtban
 		{
 			const Anope::string &mask = e->GetMask();
 			Anope::string real_mask = mask.substr(2);
-			return !u->Account() && Entry("BAN", real_mask).Matches(u);
+			return !u->IsIdentified() && Entry("BAN", real_mask).Matches(u);
 		}
 	};
 

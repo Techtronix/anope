@@ -1,6 +1,6 @@
 /* NickServ core functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -1286,7 +1286,7 @@ class NSSet : public Module
 		if (chan->ci)
 		{
 			/* Only give modes if autoop is set */
-			give_modes &= !user->Account() || autoop.HasExt(user->Account());
+			give_modes &= !user->IsIdentified() || autoop.HasExt(user->Account());
 		}
 	}
 
@@ -1321,13 +1321,13 @@ class NSSet : public Module
 
 	void OnUserModeSet(const MessageSource &setter, User *u, const Anope::string &mname) anope_override
 	{
-		if (u->Account() && setter.GetUser() == u)
+		if (u->IsIdentified() && setter.GetUser() == u)
 			u->Account()->last_modes = u->GetModeList();
 	}
 
 	void OnUserModeUnset(const MessageSource &setter, User *u, const Anope::string &mname) anope_override
 	{
-		if (u->Account() && setter.GetUser() == u)
+		if (u->IsIdentified() && setter.GetUser() == u)
 			u->Account()->last_modes = u->GetModeList();
 	}
 

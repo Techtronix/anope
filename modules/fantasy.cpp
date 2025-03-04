@@ -1,6 +1,6 @@
 /* Fantasy functionality
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -167,7 +167,7 @@ class Fantasy : public Module
 		}
 
 		// Command requires registered users only
-		if (!cmd->AllowUnregistered() && !u->Account())
+		if (!cmd->AllowUnregistered() && !u->IsIdentified())
 			return;
 
 		if (params.size() < cmd->min_params)

@@ -1,6 +1,6 @@
 /* MemoServ core functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -100,7 +100,7 @@ class MemoServCore : public Module, public MemoServService
 
 					if (ci->AccessFor(cu->user).HasPriv("MEMO"))
 					{
-						if (cu->user->Account() && cu->user->Account()->HasExt("MEMO_RECEIVE"))
+						if (cu->user->IsIdentified() && cu->user->Account()->HasExt("MEMO_RECEIVE"))
 							cu->user->SendMessage(MemoServ, MEMO_NEW_X_MEMO_ARRIVED, ci->name.c_str(), Config->StrictPrivmsg.c_str(), MemoServ->nick.c_str(), ci->name.c_str(), mi->memos->size());
 					}
 				}

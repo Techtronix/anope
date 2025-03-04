@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2011-2024 Anope Team
+ * (C) 2011-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -23,7 +23,7 @@ class IdentifyInterface : public LDAPInterface
 
 	void OnResult(const LDAPResult &r) anope_override
 	{
-		if (!u || !u->Account())
+		if (!u || !u->IsIdentified())
 			return;
 
 		NickCore *nc = u->Account();

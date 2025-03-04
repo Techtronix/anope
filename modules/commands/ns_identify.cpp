@@ -1,6 +1,6 @@
 /* NickServ core functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -82,7 +82,7 @@ class CommandNSIdentify : public Command
 			return;
 		}
 
-		if (u->Account() && na && u->Account() == na->nc)
+		if (u->IsIdentified() && na && u->Account() == na->nc)
 		{
 			source.Reply(_("You are already identified."));
 			return;

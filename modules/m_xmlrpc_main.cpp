@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2010-2024 Anope Team
+ * (C) 2010-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -226,7 +226,7 @@ class MyXMLRPCEvent : public XMLRPCEvent
 			request.reply("ip", u->ip.addr());
 			request.reply("timestamp", stringify(u->timestamp));
 			request.reply("signon", stringify(u->signon));
-			if (u->Account())
+			if (u->IsIdentified())
 			{
 				request.reply("account", iface->Sanitize(u->Account()->display));
 				if (u->Account()->o)

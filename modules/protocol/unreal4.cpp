@@ -1,6 +1,6 @@
 /* Unreal IRCD 4 functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -551,10 +551,10 @@ namespace UnrealExtban
 			const Anope::string &mask = e->GetMask();
 			Anope::string real_mask = mask.substr(3);
 
-			if (real_mask == "0" && !u->Account()) /* ~a:0 is special and matches all unauthenticated users */
+			if (real_mask == "0" && !u->IsIdentified()) /* ~a:0 is special and matches all unauthenticated users */
 				return true;
 
-			return u->Account() && Anope::Match(u->Account()->display, real_mask);
+			return u->IsIdentified() && Anope::Match(u->Account()->display, real_mask);
 		}
 	};
 

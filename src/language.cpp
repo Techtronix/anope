@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -62,7 +62,7 @@ const char *Language::Translate(const char *string)
 
 const char *Language::Translate(User *u, const char *string)
 {
-	if (u && u->Account())
+	if (u && u->IsIdentified())
 		return Translate(u->Account(), string);
 	else
 		return Translate("", string);

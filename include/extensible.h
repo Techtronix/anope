@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -191,7 +191,7 @@ class SerializableExtensibleItem<bool> : public PrimitiveExtensibleItem<bool>
 	void ExtensibleSerialize(const Extensible *e, const Serializable *s, Serialize::Data &data) const anope_override
 	{
 		data.SetType(this->name, Serialize::Data::DT_INT);
-		data[this->name] << true;
+		data[this->name] << this->HasExt(e);
 	}
 
 	void ExtensibleUnserialize(Extensible *e, Serializable *s, Serialize::Data &data) anope_override

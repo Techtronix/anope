@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2012-2024 Anope Team
+ * (C) 2012-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -46,7 +46,7 @@ class SQLOperResult : public SQL::Interface
 	{
 		SQLOperResultDeleter d(this);
 
-		if (!user || !user->Account())
+		if (!user || !user->IsIdentified())
 			return;
 
 		if (r.Rows() == 0)

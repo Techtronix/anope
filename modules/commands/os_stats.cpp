@@ -1,6 +1,6 @@
 /* OperServ core functions
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -128,6 +128,8 @@ class CommandOSStats : public Command
 	void DoStatsReset(CommandSource &source)
 	{
 		MaxUserCount = UserListByNick.size();
+		MaxUserTime = Anope::CurTime;
+		Stats::me->QueueUpdate();
 		source.Reply(_("Statistics reset."));
 		return;
 	}

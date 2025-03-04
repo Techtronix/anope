@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2003-2024 Anope Team
+ * (C) 2003-2025 Anope Team
  * Contact us at team@anope.org
  *
  * Please read COPYING and README for further details.
@@ -157,6 +157,14 @@ class DBSQL : public Module, public Pipe
 		this->sql = ServiceReference<Provider>("SQL::Provider", block->Get<const Anope::string>("engine"));
 		this->prefix = block->Get<const Anope::string>("prefix", "anope_db_");
 		this->import = block->Get<bool>("import");
+	}
+
+	void OnPostInit() anope_override
+	{
+		// If we are importing from flatfile we need to force a socket engine
+		// flush to ensure it actually gets written to the database before we
+		// connect to the uplink.
+		SocketEngine::Process();
 	}
 
 	void OnShutdown() anope_override
