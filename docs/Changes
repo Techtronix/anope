@@ -1,6 +1,20 @@
-Anope Version 2.0.18-git
+Anope Version 2.0.19-git
 ------------------------
 No significant changes.
+
+Anope Version 2.0.18
+--------------------
+Backported better sendmail error messages from 2.1.
+Backported the Windows CI fom 2.1.
+Fixed a CMake error when it encounters a hard to parse header file.
+Fixed being able to group guest nicknames.
+Fixed building Anope with CMake 4.
+Fixed compatibility with MariaDB.
+Fixed counting email addresses in ns_maxemail.
+Fixed importing user ICQ and URL data from 1.8.
+Fixed operserv/ignore not being prioritised first.
+Fixed resetting the stats with operserv/stats.
+Updated the Dutch translation.
 
 Anope Version 2.0.17
 --------------------
